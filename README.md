@@ -1,12 +1,8 @@
-/opt/repo/system/7# onectl
+# onectl
 One tool to control them all.
 
 
-
-
-
- How to build package 
-+--------------------+
+How to build package 
 
 run the following command at the root of the directory:
 > make all
