@@ -9,7 +9,7 @@ Packager: b.louargant
 License: GPL 
 BuildArch: noarch
 Source0:
-Requires: bash, python, python-argparse, git >= 1.7.12.4, python-zmq >= 14.3.1-1, libzmq3 >= 3.2.2, python-paramiko
+Requires: bash, python, python-argparse, git >= 1.7.12.4, python-zmq >= 14.3.1-1, zeromq3, python-paramiko
 BuildRoot:  %{_tmppath}/%{name}-%{version}-buildroot
 Provides: onectl
 
