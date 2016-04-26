@@ -1,0 +1,1109 @@
+.TH ONECTL "" "" "User Manuals"
+.SH NAME
+.PP
+onectl - configuration tool
+.SH SYNOPSIS
+.PP
+onectl [\f[I]options\f[]] [\f[I]input-file\f[]]...
+.SH DESCRIPTION
+.PP
+ONECTL is a tool designed to centralize platform configuration.
+It can configure certain aspects of the system at run-time, postponed
+after reboot or to show active or saved system settings.
+The purpose is to ease and automate system configuration and to allow
+more sophisticated control over the system.
+.PP
+ONECTL provides a set of commands to view, set, and automate system
+settings.
+.PD 0
+.P
+.PD
+ONECTL comes with a set of plug-ins responsible to configure the system.
+Each plugin has a set of options in the command line allowing the
+specific configuration.
+For more information check the Using Command Line Interface section
+below.
+.PP
+For a quick overview of all settings configurable in ONECTL type the
+onectl as root.
+The output will be something like this
+.PP
+\f[B]onectl\f[]
+.PD 0
+.P
+.PD
+sys.distro
+.PD 0
+.P
+.PD
+sys.kernel
+.PD 0
+.P
+.PD
+sys.time.timezone
+.PD 0
+.P
+.PD
+sys.time.ntp.service
+.PD 0
+.P
+.PD
+sys.time.ntp.servers
+.PD 0
+.P
+.PD
+net.conf.eth5.ip
+.PD 0
+.P
+.PD
+net.conf.bonds.bond1.ip
+.PD 0
+.P
+.PD
+net.conf.eth4.ip
+.PD 0
+.P
+.PD
+net.conf.eth3.ip
+.PD 0
+.P
+.PD
+net.conf.gateway
+.PD 0
+.P
+.PD
+net.bonds
+.PD 0
+.P
+.PD
+net.devices
+.PD 0
+.P
+.PD
+net.vlans
+.PD 0
+.P
+.PD
+neighbors.names
+.PD 0
+.P
+.PD
+neighbors.conf.prometheus.ip
+.PD 0
+.P
+.PD
+neighbors.conf.prometheus.ssh
+.PP
+ONECTL configuration abilities will be extended in future releases with
+add-on plugins.
+.SH SYNOPSIS
+.PP
+\f[B]onectl\f[] [--help] [--list] [--dump] [--load FILE] [bind
+SRC-PLUGIN DSCT-PLUGIN] [unbind SRC-PLUGIN DST-PLUGIN] [-d]
+.PP
+\f[B]onectl\f[] [--history] [--rollback]
+.PP
+\f[B]onectl sys.distro\f[] [--help] [--info] [--view actual|saved|diff]
+[--showall]
+.PP
+\f[B]onectl sys.kernel\f[] [--help] [--info] [--view actual|saved|diff]
+.PP
+\f[B]onectl sys.hostname\f[] [--help] [--info] [--view
+actual|saved|diff] [--set]
+.PP
+\f[B]onectl sys.time.timezone\f[] [--help] [--info] [--view
+actual|saved|diff] [--zones]
+.PP
+\f[B]onectl sys.time.ntp.service\f[] [--help] [--info] [--view
+actual|saved|diff] [--set]
+.PP
+\f[B]onectl sys.time.ntp.servers\f[] [--help] [--info] [--view
+actual|saved|diff] [--set SERVER SERVER..] [--add SERVER SERVER..]
+[--remove SERVER SERVER..]
+.PP
+\f[B]onectl net.devices\f[] [--help] [--info] [--view actual|saved|diff]
+[--set ETH:STATE ETH:STATE] [--all up|down] [--up ETH ETH] [--down ETH
+ETH]
+.PP
+\f[B]onectl net.conf.ethX.ip\f[] [--help] [--info] [--view
+actual|saved|diff] [--set IPADDR/MASK] [--ip IPADDR] [--mask MASK]
+.PP
+\f[B]onectl net.conf.gateway\f[] [--help] [--info] [--view
+actual|saved|diff] [--set GATEWAY] [--remove GATEWAY]
+.PP
+\f[B]onectl net.bonds\f[] [--help] [--info] [--view actual|saved|diff]
+[--set bondX:ethX,ethY] [--add bondX:ethX,ethY] [--remove bondX]
+.PP
+\f[B]onectl net.vlans\f[] [--help] [--info] [--view actual|saved|diff]
+[--set ETHX.VID1 ETHX.VID2] [--add ETHX.VID] [--remove ETHX.VID]
+.PP
+\f[B]onectl neighbors.names\f[] [--help] [--info] [--view
+actual|saved|diff] [--set HOST HOST] [--add HOST HOST] [--remove HOST
+HOST]
+.PP
+\f[B]onectl net.conf.hostX.ip\f[] [--help] [--info] [--view
+actual|saved|diff] [--set IPADDR] [--disable]
+.PP
+\f[B]onectl net.conf.hostX.ssh\f[] [--help] [--info] [--exchange]
+[--import] [--export] [--disable]
+.SH OPTIONS
+.TP
+.B --help
+Information for onectl usage for the specified command
+.RS
+.RE
+.TP
+.B --list
+[PLUG-IN] Displays list of all available plug-ins.
+If PLUG-IN or part of a plugin is specified only relevant information
+will be shown.If PLUG-IN is omitted all plug-ins will be shown
+.RS
+.RE
+.TP
+.B --load
+FILE Loads configuration from a FILE.
+For clean machine.
+FILE is created in advance in the following format: PLUG-IN = VALUE on
+new line each
+.RS
+.RE
+.TP
+.B -\[en]dump
+[PLUG-IN] Dumps the current configuration.
+If plug-in or part of it is specified only related configuration is
+shown.If [PLUG-IN] is omitted then all keys are shown.
+.RS
+.PP
+Example:
+.PD 0
+.P
+.PD
+\f[B]onectl --dump\f[]
+.PD 0
+.P
+.PD
+net.devices = eth3:up eth6:down
+.PD 0
+.P
+.PD
+net.conf.eth4.ip = 163.165.0.3/32
+.PD 0
+.P
+.PD
+net.bonds = bond4:eth7 bond3:eth1
+.PD 0
+.P
+.PD
+net.conf.eth8.ip = 222.168.2.2/32
+.PD 0
+.P
+.PD
+net.vlans = eth3.100 eth5.200
+.PD 0
+.P
+.PD
+\f[B]onectl --dump net.conf.b\f[]
+.PD 0
+.P
+.PD
+net.conf.bonds.bond0.ip = 172.18.198.232/24
+.PD 0
+.P
+.PD
+net.conf.bonds.bond1.ip = 172.31.3.232/24
+.RE
+.TP
+.B -\[en]show
+[PLUG-IN] Displays the active and saved config and the difference
+between them if any.
+If PLUG-IN or part of it is specified then only relevant plug-in
+configuration is shown.If PLUG-IN is omitted all configuration is shown
+Similar to using the "--view diff" command of a plugin.
+.RS
+.RE
+.TP
+.B -\[en]info
+[PLUG-IN] Displays information for plug-ins usage and how to perform
+configuration.
+If PLUG-IN or part of it is specified then only relevant information is
+shown.If PLUG-IN is omitted information for all plug-ins is shown
+.RS
+.RE
+.TP
+.B --nolive, -n
+Do not proceed to a live configuration of the system.
+The configuration is saved and executed later after reload
+.RS
+.RE
+.TP
+.B -\[en]bind
+SRC-PLUG-IN DST-PLUG-IN Links two plug-ins from the same type.
+If the value of DST-PLUG-IN is changed SRC-PLUG-IN is changed also.
+.RS
+.RE
+.TP
+.B -\[en]unbind
+SRC-PLUG-IN DST-PLUG-IN Removes the lin between two plug-ins from the
+same type.
+The oposite of --bind.
+.RS
+.RE
+.TP
+.B -\[en]history
+[CHANGEID] Shows configuration change history - date,change.
+If CHANGEID is specified the the onectl configuration state is dumped.
+Available IDs can be viewed with onectl --history command.
+History is lost on uninstall
+.RS
+.RE
+.TP
+.B -\[en]rollback
+[CHANGEID] Revert configuration to a previous state identified by
+CHANGEID.
+If CHANGEID is not specified the config is reverted to the previous
+config.
+Available CHANGEIDs can be viewed with onectl --history command.
+.RS
+.RE
+.TP
+.B -d
+Activate debug mode.
+Place -d option in each command to be debugged
+.RS
+Example:
+.PD 0
+.P
+.PD
+onectl -d net.bonds --add bond0:eth4,eth5
+.PD 0
+.P
+.PD
+.RE
+.TP
+.B PLUG-IN
+Plug-in name
+.RS
+.RE
+.SH Advanced usage:
+.TP
+.B --load-plugin
+Use this command to load (or reload) dynamic plugins.
+.RS
+.RE
+.SH PLUG-IN
+.TP
+.B \ sys.distro
+Provide information about the installed OS (Version and Profile)
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ actual\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ actual\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ actual\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]showall\f[] Show all Operating System information-both installed
+OS \[en] version
+.PD 0
+.P
+.PD
+and profile and kernel information
+.RE
+.TP
+.B \ sys.kernel
+Provide information about the running kernel
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ sys.hostname
+Configure system name
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] HOSTNAME Change the name of the system
+.RE
+.TP
+.B \ sys.time.timezone
+Provides ability to configure and view the system\[aq]s timezone
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]zones all|ZONE\f[]
+.IP
+.nf
+\f[C]
+\ Lists\ all\ available\ time\ zone\ if\ all\ command\ is\ used\ or\ a\ specific\ ZONE··
+\ Used\ with\ sys.time.timezone
+\f[]
+.fi
+.RE
+.TP
+.B \ sys.time.ntp.service
+Provides ability to start/stop NTP service and view current status
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set on|off\f[]
+.IP
+.nf
+\f[C]
+Start\ or\ stop\ NTP\ service.
+Used\ with\ sys.time.ntp.service\ \ 
+\f[]
+.fi
+.PP
+--\f[B]status\f[]
+.IP
+.nf
+\f[C]
+Show\ service\ status:\ if\ enabled\ or\ disable/if\ synchronized
+or\ not.\ Used\ with\ sys.time.ntp.service
+\f[]
+.fi
+.RE
+.TP
+.B \ sys.time.ntp.servers
+Provides ability to configure NTP servers
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] SERVER SERVER..
+.IP
+.nf
+\f[C]
+Deletes\ all\ servers\ set\ in\ /etc/ntp.conf\ and\ adds
+the\ list\ specified\ in\ the\ command\ in\ the\ same\ order\ \ 
+\f[]
+.fi
+.PP
+--\f[B]add\f[] SERVER SERVER..
+.IP
+.nf
+\f[C]
+Adds\ the\ list\ of\ servers\ specified\ to\ the\ already\ saved\ ones··
+\f[]
+.fi
+.PP
+--\f[B]remove\f[] SERVER SERVER..
+.IP
+.nf
+\f[C]
+Removes\ servers\ from\ configuration\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ net.devices
+Activate or deactivate physical network interfaces
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] ETH:STATE ETH:STATE
+.IP
+.nf
+\f[C]
+Activate\ or\ deactivate\ physical\ network\ interfaces\ in\ this\ format:
+ETH:STATE\ ETH:STATE.\ \ 
+Example:\ --set\ eth0:up\ eth1:down\ \ 
+\f[]
+.fi
+.PP
+--\f[B]all up|down\f[]
+.IP
+.nf
+\f[C]
+Activate\ or\ deactivate\ all\ interfaces\ at\ once
+\f[]
+.fi
+.PP
+--\f[B]up ETH ETH\f[]
+.IP
+.nf
+\f[C]
+Activate\ one\ or\ more\ interfaces\ \ 
+\f[]
+.fi
+.PP
+--\f[B]down ETH ETH\f[]
+.IP
+.nf
+\f[C]
+Activate\ one\ or\ more\ interfaces\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ net.conf.ethX.ip net.conf.bonds.bondX.ip net.conf.vlans.ethX.Y.ip
+Configures IP and/or mask to a physical network interfaces An interface
+must first be activated before being able to proceed with its
+configuration.
+It is done by net.devices by activating or deactivating the interface
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] IPADDR/MASK | dhcp | none
+.IP
+.nf
+\f[C]
+Configure\ an\ IP\ address\ and\ or\ mask\ to\ an\ interface\ \ 
+It\ is\ done\ in\ the\ following\ format:\ set\ IP/MASK\ \ 
+eg:\ --set\ 192.168.1.1/24\ \ 
+The\ \[aq]dhcp\[aq]\ keyword\ can\ also\ be\ used\ for\ dynamic\ IP\ configuration.\ \ 
+Example:\ --set\ dhcp\ \ 
+To\ unset\ an\ interface\ IP\ you\ can\ use\ either\ "0.0.0.0/0"\ or\ "none".\ \ 
+\f[]
+.fi
+.PP
+--\f[B]ip\f[] IPADDR
+.IP
+.nf
+\f[C]
+Configures\ IP\ address··
+\f[]
+.fi
+.PP
+--\f[B]mask\f[] MASK..
+.IP
+.nf
+\f[C]
+Configures\ mask\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ net.aliases
+Creates alias network interfaces
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] ETHX:NUM ETHX:NUM..
+.IP
+.nf
+\f[C]
+Configures\ subinterfaces\ in\ this\ format\ ETH:NUM\ ETH:NUM.\ Removes\ the\ existing\ aliases
+Example:\ --set\ eth0:1\ eth1:0
+\f[]
+.fi
+.PP
+--\f[B]add\f[] ETHX:NUM ETHX:NUM..
+.IP
+.nf
+\f[C]
+Add\ \ alias\ interfaces\ to\ already.\ \ 
+Example:\ --add\ eth0:1\ eth1:0\ \ 
+\f[]
+.fi
+.PP
+--\f[B]remove\f[] ETHX:NUM ETHX:NUM..
+.IP
+.nf
+\f[C]
+Removes\ alias\ interfaces\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ net.conf.aliases.ethX:NUM.ip net.conf.aliases.bondX:1.ip
+Configures IP and/or mask to a alias interfaces An interface must first
+be activated before being able to proceed with its configuration.
+It is done by net.devices by activating or deactivating the interface
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] IPADDR/MASK | dhcp | none
+.IP
+.nf
+\f[C]
+Configure\ an\ IP\ address\ and\ or\ mask\ to\ an\ interface\ \ 
+It\ is\ done\ in\ the\ following\ format:\ set\ IP/MASK\ \ 
+eg:\ --set\ 192.168.1.1/24\ \ 
+The\ \[aq]dhcp\[aq]\ keyword\ can\ also\ be\ used\ for\ dynamic\ IP\ configuration.\ \ 
+Example:\ --set\ dhcp\ \ 
+To\ unset\ an\ interface\ IP\ you\ can\ use\ either\ "0.0.0.0/0"\ or\ "none".\ \ 
+\f[]
+.fi
+.PP
+--\f[B]ip\f[] IPADDR
+.IP
+.nf
+\f[C]
+Configures\ IP\ address··
+\f[]
+.fi
+.PP
+--\f[B]mask\f[] MASK..
+.IP
+.nf
+\f[C]
+Configures\ mask\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ net.conf.gateway
+Configures default gateway
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] IP..
+.IP
+.nf
+\f[C]
+Configures\ the\ default\ gateway:
+Example:set\ 10.165.110.254
+\f[]
+.fi
+.PP
+--\f[B]remove\f[] IP
+.IP
+.nf
+\f[C]
+Removes\ default\ gateway\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ net.bonds
+Activates or deactivates bonding interfaces
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] bondX:ethX,ethY..
+| none
+.IP
+.nf
+\f[C]
+Creates\ bonding\ interface:\ \ 
+Example:\ --set\ bond0:eth0,eth1\ bond1:eth2,eth3\ \ 
+Keyword\ "none"\ can\ be\ used\ to\ remove\ all\ bonds\ \ 
+Set\ command\ removes\ previous\ configuration\ and\ applied\ the\ new\ one\ \ 
+\f[]
+.fi
+.PP
+--\f[B]add\f[] bondX:ethX,ethY
+.IP
+.nf
+\f[C]
+Add\ a\ bond.\ Adds\ the\ bond\ to\ the\ previous\ configuration.\ \ 
+Example:\ --add\ bond3:eth2,eth5\ \ 
+\f[]
+.fi
+.PP
+--\f[B]remove\f[] bondX..
+.IP
+.nf
+\f[C]
+Removes\ a\ bond\ \ 
+\f[]
+.fi
+.RE
+.TP
+.B \ net.vlans
+Activates or deactivates bonding interfaces
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] ETHX.VID1 ETHX.VID2
+.IP
+.nf
+\f[C]
+Creates\ vlan(s):\ \ 
+Example:\ --set\ eth0.100\ eth1.200\ \ 
+Keyword\ "none"\ can\ be\ used\ to\ remove\ all\ vlans\ \ 
+Set\ command\ removes\ previous\ configuration\ and\ applies\ the\ new\ one\ \ 
+\f[]
+.fi
+.PP
+--\f[B]add\f[] ETHX.VID
+.IP
+.nf
+\f[C]
+Add\ a\ vlan.\ Add\ command\ adds\ configuration\ to\ the\ existing\ one.\ \ 
+Example:\ --add\ eth3.100\ \ 
+\f[]
+.fi
+.PP
+--\f[B]remove\f[] ETHX.VID..
+.IP
+.nf
+\f[C]
+Remove\ a\ vlan\ \ 
+\f[]
+.fi
+.RE
+.SH neighbors PLUG-INs
+.PP
+Plug-ins used for neigbouring host configuration like ip to hostname
+mapping and ssh key exchange keys
+.TP
+.B \ neighbors.names
+Create plugins for neighbor host configuration
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] HOST HOST
+.IP
+.nf
+\f[C]
+Create\ plugins\ for\ neighbor\ host\ configuration.\ New\ plugins\ will
+appear\ as\ neighbors.conf.hostX.ip\ and\ neighbors.conf.hostX.ssh.
+The\ set\ command\ will\ remove\ previously\ configured\ neighbor\ plugins.\ \ 
+Example:\ onectl\ neighbors.name\ --set\ prometheus\ \ 
+\f[]
+.fi
+.PP
+--\f[B]add\f[] HOST HOST
+.IP
+.nf
+\f[C]
+Add\ neighbor\ plugins\ to\ already\ existing\ ones.\ \ 
+Example:\ onectl\ neighbors.name\ --add\ prometheus1\ \ 
+\f[]
+.fi
+.PP
+--\f[B]remove\f[] HOST HOST..
+.IP
+.nf
+\f[C]
+Remove\ plugins\ and\ configuration\ for\ the\ listed\ neighbors.
+--disable\ is\ done\ for\ ip\ and\ ssh\ before\ deleting\ the\ plugins\ \ 
+Example:\ onectl\ neighbors.name\ --remove\ prometheus1··
+\f[]
+.fi
+.RE
+.TP
+.B \ neighbors.conf.hostX.ip
+Configure IP address of the host and save it as an entry in /etc/hosts
+Plugin neighbors.names should be first configured before being able to
+proceed with this configuration.
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] IPADDR
+.IP
+.nf
+\f[C]
+Configures\ the\ ip\ address\ of\ the\ host\ and\ saves\ it\ in\ /etc/hosts\ \ 
+eg:\ --set\ 192.168.1.1/24\ \ 
+\f[]
+.fi
+.PP
+--\f[B]disable\f[] Removes the entry for the hostname in /etc/hosts
+.RE
+.TP
+.B \ neighbors.conf.hostX.ssh
+Exchanges ssh key with hostX or removes it.
+Before key is exchanges neighbors.conf.hostX.ip must be configured in
+order communication with the host is established.
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in
+.PD 0
+.P
+.PD
+--\f[B]exchange\f[] [PASS]
+.IP
+.nf
+\f[C]
+Exchange\ ssh\ keys\ with\ hostX.\ This\ plugin\ creates\ DSA\ keys\ on\ the\ local\ machine\ and\ hostX\ if\ they\ don\[aq]t\ exist\ and
+copies\ them\ to\ the\ other\ machine\ respectivelly\ in\ ~/.ssh/authorized_keys.
+If\ key\ is\ already\ exchanged\ with\ the\ host,\ password\ will\ not\ be\ required\ \ 
+Optional\ parameter\ is\ password.\ \ 
+eg:\ --exchange\ NetCen\ \ 
+\f[]
+.fi
+.PP
+--\f[B]import\f[] [PASS]
+.IP
+.nf
+\f[C]
+Get\ ssh\ key\ from\ hostX.\ This\ plugin\ creates\ DSA\ key\ on\ hostX\ if\ it\ does\ not\ exist\ and
+copies\ it\ on\ the\ local\ machine\ in\ ~/.ssh/authorized_keys\ \ 
+If\ key\ is\ already\ exchanged\ with\ the\ host,\ password\ will\ not\ be\ required··
+
+eg:\ --import\ \ 
+\f[]
+.fi
+.PP
+--\f[B]export\f[] [PASS]
+.IP
+.nf
+\f[C]
+Send\ ssh\ key\ to\ hostX.\ This\ plugin\ creates\ DSA\ key\ on\ the\ local\ machine\ if\ it\ does\ not\ exist\ and
+copies\ it\ on\ hostX\ in\ ~/.ssh/authorized_keys\ \ 
+If\ key\ is\ already\ exchanged\ with\ the\ host,\ password\ will\ not\ be\ required··
+eg:\ --export\ \ 
+\f[]
+.fi
+.PP
+--\f[B]disable\f[] [PASS] Removes the copied DSA keys and clears the
+host entries in ~/.ssh/known_hosts from local machine and hostX
+.PD 0
+.P
+.PD
+If key is already exchanged with the host, password will not be
+required··
+.RE
+.SH SERVICE PLUG-INs
+.PP
+Plug-ins used for easy service configuration
+.PD 0
+.P
+.PD
+Examples: ntpd.services.ntpd.
+.PD 0
+.P
+.PD
+All the service plugins are also mapped to services.
+plugin for easier use.
+.PD 0
+.P
+.PD
+ntp.services.ntpd will also appear as services.ntpd as an example
+.TP
+.B \ ntp.services.. services.. and etc
+Plug-ins used for easy service configuration.
+All of them have the following commands in common:
+.RS
+.PP
+--\f[B]help\f[] Command information
+.PD 0
+.P
+.PD
+--\f[B]info\f[] Provides information for the specified plug-in,
+available commands, valid values
+.PD 0
+.P
+.PD
+--\f[B]view actual|saved|diff\f[] Dumps plug-in configuration
+.IP
+.nf
+\f[C]
+actual\ \[en]\ \ \ \ \ Dumps\ active\ system\ configuration\ \ 
+saved\ \ \[en]\ \ \ \ \ Configured\ but\ not\ active\ yet\ \ 
+diff\ \ \ \[en]\ \ \ \ \ Difference\ between\ saved\ and\ active\ configuration\ \ 
+\f[]
+.fi
+.PP
+--\f[B]set\f[] on|off Configures the service
+.IP
+.nf
+\f[C]
+on\ \[en]\ \ \ \ Executes\ chkconfig\ --del\ then\ chkconfig\ --add··
+off\ \[en]\ \ \ Executes\ chkconfig\ --del\ service··
+\f[]
+.fi
+.PP
+--\f[B]start\f[] SERVICE
+.IP
+.nf
+\f[C]
+Starts\ the\ SERVICE.\ Equal\ to\ service\ SERVICE\ sart\ \ 
+Example:\ onectl\ services.ntpd\ --start\ \ 
+\f[]
+.fi
+.PP
+--\f[B]stop\f[] SERVICE
+.IP
+.nf
+\f[C]
+Stops\ the\ service.\ Equal\ to\ service\ SERVICE\ stop\ \ 
+Example:\ onectl\ service.ntpd\ --stop\ \ 
+\f[]
+.fi
+.PP
+--\f[B]restart\f[] SERVICE
+.IP
+.nf
+\f[C]
+Restarts\ the\ SERVICE.\ Equal\ to\ service\ SERVICE\ resart\ \ 
+Example:\ onectl\ services.ntpd\ --restart\ \ 
+\f[]
+.fi
+.PP
+--\f[B]rank\f[] START:KILL
+.IP
+.nf
+\f[C]
+Sets\ the\ position\ in\ which\ the\ service\ is\ started\ and\ stopped.START\ is\ for\ start\ position\ and\ KILL\ for\ kill\ position\ \ 
+The\ command\ will\ change\ #\ chkconfig:\ -\ START\ KILL\ in\ /etc/init.d/SERVICE\ \ \ 
+Example:\ onectl\ service.ntpd\ --rank\ 58:74\ \ 
+\f[]
+.fi
+.PP
+--\f[B]level\f[] LEVELS
+.IP
+.nf
+\f[C]
+Change\ the\ runlevel\ in\ which\ the\ service\ is\ started.\ List\ of\ levels\ represented\ like\ a\ string.Eg:345\ \ 
+The\ command\ will\ change\ #\ chkconfig:\ LEVELS\ 58\ 74\ in\ /etc/init.d/SERVICE···
+Example:\ onectl\ services.ntpd\ --level\ 35\ \ 
+\f[]
+.fi
+.PP
+--\f[B]status\f[]
+.IP
+.nf
+\f[C]
+Displays\ information\ for\ the\ service\ \ 
+Example:\ onectl\ service.ntpd\ --status\ \ 
+\f[]
+.fi
+.RE
+.SH AUTHORS
+May 8, 2015.

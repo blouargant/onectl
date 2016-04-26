@@ -1,0 +1,48 @@
+<!-- This is a XML template as a reference how to fill XMLS for creation of plugins -->
+<!-- Describes how to create create XML for generating ini manipulation plugins -->
+
+<?xml version="1.0"?>
+<plugins>
+	<file_type>ini</file_type>					<!-- MANDATORY!Type os file: possible values: ini -->
+	<file>/home/test/test</file>				<!-- MANDATORY!Path to the file eg: /etc/sysconfig/network -->
+
+	<plugin>									<!-- MANDATORY!A list of plugins to be created for the specified ini file -->
+		<name>test.plugin</name>				<!-- MANDATORY!A name of the plugin eg sys.hostname  -->
+		<info>This is help for the plugin</info> <!-- MANDATORY!Information for the plugin that will be displayed in the info command  -->
+		<section>SECTION</section>				<!-- Optional.Section under which the key is located.For nested sections add a path eg /SEC1/SEC1.1/SEC1.1.1 .. -->
+		<key>KEY</key>						<!-- MANDATORY!A name of the plugin eg sys.hostname  -->
+		<input>									<!-- Information for the input from the commands  -->
+			<type>LIST</type>					<!-- Input type.Possible values : LIST (input is list of strings), INTEGER(single int),INTEGER-LIST(list of int) STRING(single value)  -->
+			<format>[VALUE:VALUE]</format>			<!-- Optional.Format of the input as string. This will be shown in the help commands. Default VALUE For verifing the validity of the input fill validation tags -->
+			<validation>						<!-- Optional.Validations on the command input  -->
+				<regexp>REGEXP</regexp>				<!-- Optional.Regular expression will be applied on all input data from the commands.For strings only  -->
+				<min>DIGIT</min>					<!-- Optional.Min value for input/type integer or INTEGER-LIST.For digits only-->
+				<max>DIGIT</max>					<!-- Optional.Max value for input/type integer or INTEGER-LIST.For digits only-->
+			</validation>
+			<separator> </separator>▸   ▸   ▸   <!-- Optional.Separator for the key values in the ini file.Default is space-->
+		</input>
+		<live>COMMAND</live>					<!-- Optional.Command that applies configuration immediately if any.Example : hostname. All the data from command input will be applied with this command-->
+		<!-- OR instead of <live>COMMAND</live> for getting active config for commands with simple output like hostname-->
+		<live>
+			<set>COMMAND</set>					<!-- Optional.Command that will set the active config in form COMMAND val 1 COMMAND val2 where val1 ,val2 .. is input from cli commands-->
+		    <get>COMMAND</get>					<!-- Optional.Command that will get the active config.Only with simple output like hostname-->
+		<live>
+	</plugin>
+
+	<plugin>
+		<name>test.plugintwo</name>
+		<info>This is help for second plugin</info>
+		<key>KEY</key>
+		<input>
+			<type>DIGIT</type>
+			<format>VAL:VAL</format>
+			<validation>
+				<min>DIGIT</min>
+				<max>DIGIT</max>
+			</validatioin>
+			<separator>;</separator>
+		</input>
+		<live>command</live>
+	</plugin>
+</plugins>
+

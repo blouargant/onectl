@@ -1,0 +1,20 @@
+#!/usr/bin/python -u
+
+import sys
+from includes import cli
+
+if __name__ == '__main__':
+	try:
+		argv = sys.argv[1:]
+		oneCli = cli.OnectlCLI()
+		args = oneCli.create_parser(argv)
+		if args:
+			oneCli.parse_cli(args)
+	except:
+		sys.exit(2)
+	
+	sys.exit(0)
+
+
+
+

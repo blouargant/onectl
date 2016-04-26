@@ -1,0 +1,120 @@
+#!/bin/sh
+#
+# onectl          Start/Stop the onectl daemon.
+#
+# chkconfig: 2345 90 60
+# description: onectl is a program that helps system \
+#              configuration.
+
+### BEGIN INIT INFO
+# Provides: onectld
+# Default-Start:  245
+# Default-Stop: 90
+# Short-Description: run onectl daemon
+# Description: ONECTL is a program that helps system configuration  
+#              and control.
+### END INIT INFO
+
+# Source function library.
+if [ -f /etc/init.d/functions ] ; then
+	. /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ] ; then
+	  . /etc/rc.d/init.d/functions
+else
+	exit 0
+fi
+
+#[ -f /etc/sysconfig/onectl ] || { 
+#    [ "$1" = "status" ] && exit 4 || exit 6 
+#}
+
+RETVAL=0
+prog="onectl"
+name=onectld
+exec=/usr/bin/$prog
+pidfile=/var/run/$prog.pid
+lockfile=/var/lock/subsys/$prog
+#config=/etc/sysconfig/$prog
+ONECTLARG="--start"
+
+
+#[ $UID -eq 0 ] && [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
+
+start() {
+    if [ $UID -ne 0 ] ; then
+        echo "User has insufficient privilege."
+        exit 4
+    fi
+    [ -x $exec ] || exit 5
+    #[ -f $config ] || exit 6
+    echo -n $"Starting $name: "
+    PID=`$prog $ONECTLARG > /dev/null 2>&1 & echo $!`
+    if [ -z $PID ]; then
+        printf "%s\n" "FAIL"
+    else
+        echo $PID > $pidfile
+        printf "%s - started %s\n" "OK" $PID·
+        retval=$?
+        [ $retval -eq 0 ] && touch $lockfile·
+        echo
+        return $RETVAL
+    fi
+
+    retval=$?
+}
+
+stop() {
+    if [ $UID -ne 0 ] ; then
+        echo "User has insufficient privilege."
+        exit 4
+    fi
+    echo -n $"Stopping $name: "
+    killproc $exec
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile && rm -f $pidfile
+}
+
+restart() {
+    status_queit && stop
+    start
+}
+
+getstatus() {
+    # run checks to determine if the service is running or use generic status
+    status -p $pidfile $prog
+}
+
+status_queit() {
+    getstatus >/dev/null 2>&1
+    #status -p $PID_FILE >/dev/null 2>&1
+}
+
+
+case "$1" in
+    start)
+        status_queit && exit 0
+        start
+        ;;
+    stop)
+        if ! status_queit; then
+            rm -f $lockfile
+            rm -f $pidfile
+            exit 0
+        fi
+
+        #status_queit || exit 0
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    status)
+        getstatus
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart}"
+        exit 2
+esac
+exit $?
+

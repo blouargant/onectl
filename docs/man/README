@@ -1,0 +1,4 @@
+How to build a man page:
+- Fill in mark down the user guide onectlman.1.md
+- pandoc -s -t man docs/man/onectlman.1.md -o docs/man/onectl.1
+- cp docs/man/onectl.1 /usr/share/man/man1/

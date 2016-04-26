@@ -1,0 +1,18 @@
+<!-- This is a XML template as a reference how to fill XMLS for creation of plugins -->
+<!-- Describes how to create service XML used to generate service plugins -->
+
+<?xml version="1.0"?>
+<plugins>
+	<file_type>service</file_type>				<!-- MANDATORY!Type os file: possible values: service-->
+
+	<plugin>									<!-- MANDATORY!A list of plugins to be created for the specified ini file -->
+		<name>test.services.plugin</name>		<!-- MANDATORY!A name of the plugin.The service plugins should contain services in the name example usc.services.uscd.The same plugin wil be created as services.uscd for easier use  -->
+		<info>This is help for the plugin</info> <!-- MANDATORY!Information for the plugin that will be displayed in the info command  -->
+	</plugin>
+
+	<plugin>
+		<name>usc.services.uscd</name>
+		<info>This is help for second plugin</info>
+	</plugin>
+</plugins>
+

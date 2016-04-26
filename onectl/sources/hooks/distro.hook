@@ -1,0 +1,7 @@
+# This is a sample hook
+
+targetPlugin = sys.distro     # Plugin to hook
+targetFunction = showall      # Function within the targetPlugin to hook
+callPlugin = sys.kernel       # Plugin to call
+callFunction = kernelShowAll  # Function within callPlugin to execute
+

@@ -1,0 +1,5 @@
+targetPlugin = services.networks     # Plugin to hook
+targetFunction = restart             # Function within the targetPlugin to hook
+callPlugin = services.firewall       # Plugin to call
+callFunction = restart               # Function within callPlugin to execute
+

@@ -1,0 +1,24 @@
+Needed packages:
+python-argparse
+
+Bash completion:
+ Needs onectl.bash in /etc/bash_completion.d/
+ then add "source /etc/bash_completion.d/onectl.bash" to /etc/bashrc
+
+
+to display the content of onectl:
+tree --dirsfirst -I '*pyc|*~|*.backup'
+
+
+
+To go from NCAP's desc syntax to normal python:
+append "self.directive_" to the special command.
+Exemple 1:
+	info "Display that text"
+becomes
+	self.directive_info("Display that text")
+
+Exemple 2:
+	mkdir /this/directory
+becomes
+	self.directive_mkdir("/this/directory")
