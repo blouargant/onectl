@@ -1,8 +1,8 @@
 #%define _unpackaged_files_terminate_build 0
 
 #Autoreq: no
-Summary: ncxctl add on plugins 
-Name: ncxctl-plugins
+Summary: onectl add on plugins 
+Name: onectl-plugins
 Version:
 Release:
 Distribution:
@@ -12,25 +12,25 @@ License: GPL
 BuildArch: noarch
 Source0:
 # we fix initscripts version because we rename /etc/init.d/network
-Requires: ncxctl >= %{version}, initscripts = 9.03.40-2.el6
+Requires: onectl >= %{version}, initscripts = 9.03.40-2.el6
 BuildRoot:  %{_tmppath}/%{name}-%{version}-buildroot
-Provides: ncxctl-plugins-kvm
-#Obsoletes: ncxctl <= %{version}
+Provides: onectl-plugins-kvm
+#Obsoletes: onectl <= %{version}
 
 
 %description
-ncxctl is a tool designed to centralized a plateform configuration.
+onectl is a tool designed to centralized a plateform configuration.
 Its configuration abilities is extended with addon plugins.
 
 %package kvm
-Requires: ncxctl python-xmltodict libvirt-python
-Summary: ncxctl tool for KVM network configuration
+Requires: onectl python-xmltodict libvirt-python
+Summary: onectl tool for KVM network configuration
 Group: Comverse
 %description kvm
 KVM networking plugins...
 
 
-%define NCXCTLPATH /usr/share/comverse/ncxctl
+%define NCXCTLPATH /usr/share/comverse/onectl
 %define TEMPLATES %{NCXCTLPATH}/templates
 %define PLUGINPATH %{NCXCTLPATH}/plugins
 %define XMLPATH %{NCXCTLPATH}/xml
@@ -84,7 +84,7 @@ rm -rf $RPM_BUILD_ROOT
 if [ $1 -eq 1 ]; then
 	IFCFG="/etc/sysconfig/network-scripts/ifcfg-*"
 	OVSBR_LST=$(ls $IFCFG | xargs grep '^TYPE *= *"*OVSBridge' | sed -e "s/.*ifcfg-//" | sed -e "s/:.*//")
-	ncxctl net.bridges --set $OVSBR_LST
+	onectl net.bridges --set $OVSBR_LST
 fi
 if [ -e /etc/rc.d/init.d/network ]; then
 	chkconfig --del network
@@ -103,18 +103,18 @@ fi
 rm -f /tmp/OpenKVI.xm 2>/dev/null
 virsh dumpxml OpenKVI 1>/tmp/OpenKVI.xml 2>/dev/null
 if [ -e /tmp/OpenKVI.xml ]; then
-	ENABLED=$(ncxctl kvm.openkvi --view saved | grep -vi "Warning")
+	ENABLED=$(onectl kvm.openkvi --view saved | grep -vi "Warning")
 	if [ -z "$ENABLED" ]; then
-		ncxctl kvm.openkvi --set enable
+		onectl kvm.openkvi --set enable
 		NAT=$(grep "iptables -I FORWARD -p tcp -i .* -o .* --dport 443 -j ACCEPT" /etc/rc.d/rc.local)
 		if [ "$NAT" ]; then
 			BRMGNT=$(echo "$NAT" | sed -e "s/.*tcp -i //" | sed -e "s/ -o .*//")
 			echo "Setting OpenKVI in NAT mode on $BRMGNT"
-			ncxctl openkvi.access.bridge --set $BRMGNT
-			ncxctl openkvi.access.mode --set nat
+			onectl openkvi.access.bridge --set $BRMGNT
+			onectl openkvi.access.mode --set nat
 		else
 			echo "Setting OpenKVI in Bridge mode"
-			ncxctl openkvi.access.mode --set direct
+			onectl openkvi.access.mode --set direct
 		fi
 	fi
 fi
