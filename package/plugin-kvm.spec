@@ -7,7 +7,7 @@ Version:
 Release:
 Distribution:
 Group: Comverse
-Packager: b.louargant <bertrand.louargant@comverse.com>
+Packager: b.louargant <bertrand.louargant@atoutlinux.net>
 License: GPL 
 BuildArch: noarch
 Source0:
@@ -30,11 +30,11 @@ Group: Comverse
 KVM networking plugins...
 
 
-%define NCXCTLPATH /usr/share/comverse/onectl
-%define TEMPLATES %{NCXCTLPATH}/templates
-%define PLUGINPATH %{NCXCTLPATH}/plugins
-%define XMLPATH %{NCXCTLPATH}/xml
-%define HOOKS %{NCXCTLPATH}/hooks
+%define ONECTLPATH /usr/share/onectl
+%define TEMPLATES %{ONECTLPATH}/templates
+%define PLUGINPATH %{ONECTLPATH}/plugins
+%define XMLPATH %{ONECTLPATH}/xml
+%define HOOKS %{ONECTLPATH}/hooks
 
 %prep
 %setup
