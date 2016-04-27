@@ -106,8 +106,8 @@ class PluginControl(pluginClass.Base):
 						return 1
 					MGNT = BR_MGNT+"-mgnt"
 					
-					if os.path.exists('/etc/comverse/openkvi_nat'):
-						bash.run('sh /etc/comverse/openkvi_nat stop')
+					if os.path.exists('/etc/openkvi/openkvi_nat'):
+						bash.run('sh /etc/openkvi/openkvi_nat stop')
 					
 					openkvi_nat = []
 					openkvi_nat.append('#/bin/sh\n')
@@ -146,9 +146,11 @@ class PluginControl(pluginClass.Base):
 					openkvi_nat.append('  stop\n')
 					openkvi_nat.append('  start\n')
 					openkvi_nat.append('fi\n')
-					open("/etc/comverse/openkvi_nat", "w").writelines(openkvi_nat)
+					if not os.path.exists('/etc/openkvi'):
+						bash.run('mkdir -p /etc/openkvi')
+					open("/etc/openkvi/openkvi_nat", "w").writelines(openkvi_nat)
 					
-					bash.run('sh /etc/comverse/openkvi_nat start')
+					bash.run('sh /etc/openkvi/openkvi_nat start')
 					rc_local = open("/etc/rc.d/rc.local").readlines()
 					final_rc_local = []
 					for line in rc_local:
@@ -157,14 +159,14 @@ class PluginControl(pluginClass.Base):
 							append = False
 						if re.match('# OpenKVI Nating.*', line):
 							append = False
-						if re.match('sh /etc/comverse/openkvi_nat restart', line):
+						if re.match('sh /etc/openkvi/openkvi_nat restart', line):
 							append = False
 						
 						if append:
 							final_rc_local.append(line)
 						
 					final_rc_local.append("# OpenKVI Nating:\n")
-					final_rc_local.append("sh /etc/comverse/openkvi_nat restart\n")
+					final_rc_local.append("sh /etc/openkvi/openkvi_nat restart\n")
 					open("/etc/rc.d/rc.local", "w").writelines(final_rc_local)
 					self.output.info("OpenKVI access mode set to nat")
 				else:

@@ -344,10 +344,10 @@ class PluginControl(pluginClass.Base):
 			rclocal = open('/etc/rc.d/rc.local', 'r').readlines()
 			rclocalmod = []
 			for line in rclocal:
-				if not re.search('# OpenKVI Nating :', line) and not re.search('sh /etc/comverse/openkvi_nat', line):
+				if not re.search('# OpenKVI Nating :', line) and not re.search('sh /etc/openkvi/openkvi_nat', line):
 					rclocalmod.append(line)
 			open('/etc/rc.d/rc.local', 'w').writelines(rclocalmod)
-			res, err = bash.run('sh /etc/comverse/openkvi_nat stop')
+			res, err = bash.run('sh /etc/openkvi/openkvi_nat stop')
 		
 		self.output.info('Trying to stop OpenKVI ...')
 		res, err = bash.run('virsh destroy OpenKVI')
@@ -444,11 +444,11 @@ class PluginControl(pluginClass.Base):
 			res, err = bash.run('openssl rand -hex 6')
 			NUM = res[6:]
 			MAC = "52:54:00:"+NUM[0:2]+":"+NUM[2:4]+":"+NUM[4:6]
-			if os.path.exists('/usr/local/kvm/firstboot'):
-				os.remove('/usr/local/kvm/firstboot/system.startup')
-				shutil.copy2('/usr/local/kvm/firstboot/system.startup.kvm_openkvi','/usr/local/kvm/firstboot/system.startup')
+			if os.path.exists('/usr/local/firstboot'):
+				os.remove('/usr/local/firstboot/system.startup')
+				shutil.copy2('/usr/local/firstboot/system.startup.kvm_openkvi','/usr/local/firstboot/system.startup')
 			else:
-				os.remove('/usr/local/comverse/firstboot/system.startup')
+				os.remove('/usr/local/firstboot/system.startup')
 				shutil.copy2('/usr/local/comverse/firstboot/system.startup.kvm_openkvi','/usr/local/comverse/firstboot/system.startup')
 			bash.run('mkdir -p /opt/virtualization/vmdisks/')
 			bash.run('rm -f /opt/virtualization/vmdisks/OpenKVI-01.img')
@@ -516,8 +516,8 @@ class PluginControl(pluginClass.Base):
 			auth_lines.extend(keylines)
 			open('/root/.ssh/authorized_keys', 'w').writelines(auth_lines)
 			
-			if os.path.exists('/usr/local/kvm/firstboot/openkvi.xml'):
-				xml_lines = open('/usr/local/kvm/firstboot/openkvi.xml', 'r').readlines()
+			if os.path.exists('/usr/local/firstboot/openkvi.xml'):
+				xml_lines = open('/usr/local/firstboot/openkvi.xml', 'r').readlines()
 			else:
 				xml_lines = open('/usr/local/comverse/firstboot/openkvi.xml', 'r').readlines()
 			final_xml = []
@@ -577,7 +577,7 @@ class PluginControl(pluginClass.Base):
 				create_openkvi.append('virsh net-autostart default\n')
 				create_openkvi.append('virsh net-start default\n')
 			
-			create_openkvi.append('sh /usr/local/kvm/firstboot/system.startup\n')
+			create_openkvi.append('sh /usr/local/firstboot/system.startup\n')
 			create_openkvi.append('virsh destroy OpenKVI 2>&1\n')
 			create_openkvi.append('virsh undefine 2>&1\n')
 			create_openkvi.append('virsh define /opt/virtualization/openkvi.xml 1>/root/virsh_cmd 2>&1\n')
@@ -599,7 +599,7 @@ class PluginControl(pluginClass.Base):
 				create_openkvi.append('done\n')
 				create_openkvi.append('echo "OpenKVI installation completed." >> /etc/issue \n')
 				create_openkvi.append('sleep 60\n')
-				create_openkvi.append('sh /usr/local/kvm/firstboot/system.startup \n')
+				create_openkvi.append('sh /usr/local/firstboot/system.startup \n')
 				create_openkvi.append('sh /etc/comverse/openkvi_nat restart\n')
 			
 			open('/root/create_openkvi.sh', 'w').writelines(create_openkvi)
