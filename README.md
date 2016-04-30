@@ -1,6 +1,13 @@
 # onectl
 One tool to control them all.
 
+ONECTL is designed to centralize system configuration. It can configure certain aspects of the system at run-time, postponed after reboot 
+or to show active or saved system settings. 
+It can  ease and automate system configuration and to allow more precise control over the system.
+
+ONECTL comes with a set of plug-ins responsible for each module config. Each plugin has a set of options in the 
+command line. Get acquainted with the Using Command Line Interface in onectl man.
+
 
 How to build package 
 
