@@ -73,7 +73,7 @@ class PluginControl(pluginClass.Base):
 		msg += "--remove HOSTNAME : Remove neighbour(s) plugin(s).\n"
 		msg += "\n"
 		msg += "--browse [ETH]    : Look for local servers reachable from ETH interface.\n"
-		msg += "                    If ETH is omited then the search is done on all interfaces.\n"
+		msg += "                    Use \"all\" keyword to browse on all interfaces.\n"
 		msg += "\n"
 		msg += " NB: After creating a neighbour plugin configuration is set via neighbors.conf. plugins.\n"
 		self.output.help(title, msg)
@@ -288,7 +288,7 @@ class PluginControl(pluginClass.Base):
 		except:
 			raise
 	
-	def browse(self, eth):
+	def browse(self, eth="all"):
 		try:
 			if not eth:
 				eth = "all"
@@ -309,7 +309,7 @@ class PluginControl(pluginClass.Base):
 				
 			for line in lines:
 				if line:
-					#=;eth0;IPv4;linux-4 [52:54:00:10:8e:76];_workstation._tcp;local;linux-4.local;10.165.110.102;9;
+					#=;eth0;IP:v4;linux-4 [52:54:00:10:8e:76];_workstation._tcp;local;linux-4.local;10.165.110.102;9;
 					#=;eth0;IPv4;KVM-HSV-HS22C;_ssh._tcp;local;KVM-HSV-HS22C.local;192.168.122.1;22;
 					#=;eth0;IPv4;Virtualization Host fr-cae-kvm33;_libvirt._tcp;local;fr-cae-kvm33.local;10.165.110.33;65535;"qemu"
 					info = line.split(';')
@@ -318,6 +318,7 @@ class PluginControl(pluginClass.Base):
 					service = info[4]
 					ip = ''
 					mac = ''
+					extra = ''
 					if len(info) > 6:
 						ip = info[7]
 					if service == "_workstation._tcp":
@@ -327,6 +328,10 @@ class PluginControl(pluginClass.Base):
 					elif service == "_libvirt._tcp":
 						name = re.sub(r'Virtualization Host ', '', info[3])
 						service = "Virtualization"
+						if re.search(';"qemu"', line):
+							extra = "qemu"
+						elif re.search(';"kvm"', line):
+							extra = "kvm"
 					elif service == "_ssh._tcp":
 						service = "SSH"
 					
@@ -344,6 +349,8 @@ class PluginControl(pluginClass.Base):
 							neigbors[iface][name]['ip'] = ip
 						if service and service not in neigbors[iface][name]['services']:
 							neigbors[iface][name]['services'].append(service)
+						if extra and extra not in neigbors[iface][name]['services']:
+							neigbors[iface][name]['services'].append(extra)
 					
 					
 			ifaces = sorted(neigbors.keys())

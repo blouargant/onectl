@@ -1,23 +1,6 @@
 ********************************************************************************
-* ONECTL releasenote                                                           *
+* ONECTL README                                                                *
 ********************************************************************************
-VERSION : 1.0.0-1
-DATE : 2016-04-18
-
-New Features:
--------------
-ID:   None - Added remote connect library.
-Desc: Added a remote connect library. For more info check the docs folder
-
-
-
-FixedBugs:
------------
-
-
-Known Bugs:
------------
-
 Install Notes:
 --------------
 rpm -ivh onectl-....rpm
@@ -31,3 +14,25 @@ Uuninstall Notes:
 rpm -e onectl-...rpm
 
 
+********************************************************************************
+* ONECTL releasenote                                                           *
+********************************************************************************
+
+VERSION : 1.0.1-1
+DATE : 2016-05-12
+
+New Features:
+-------------
+- Added information in neighbors --browse option.
+
+********************************************************************************
+
+VERSION : 1.0.0-1
+DATE : 2016-04-18
+
+New Features:
+-------------
+ID:   None - Added remote connect library.
+Desc: Added a remote connect library. For more info check the docs folder
+
+********************************************************************************
