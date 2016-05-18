@@ -82,6 +82,7 @@ class OnectlServer:
 			data = None
 			debug = None
 			nolive = None
+			pwd = None
 			# from encode_message
 			if 'plugin' in req_dict:
 				plugin = req_dict['plugin']
@@ -93,9 +94,11 @@ class OnectlServer:
 				debug = req_dict['debug']
 			if 'nolive' in req_dict:
 				nolive = req_dict['nolive']
+			if 'pwd' in req_dict:
+				pwd = req_dict['pwd']
 			
 			pluginsCtl = self.pluginsCtl
-			result, messages = pluginsCtl.execute_action(plugin, action, data, debug, nolive)
+			result, messages = pluginsCtl.execute_action(plugin, action, data, debug, nolive, pwd)
 			req_dict['data'] = '\n'.join(messages)
 			req_dict['result'] = result
 			return req_dict

@@ -139,6 +139,7 @@ class OnectlClient:
 		''' Create a message for getting informationm '''
 		try:
 			msg_dict={}
+			msg_dict['pwd'] = os.getcwd()
 			msg_dict['plugin'] = plugin
 			msg_dict['action'] = action
 			msg_dict['data'] = data

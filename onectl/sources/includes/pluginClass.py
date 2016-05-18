@@ -35,6 +35,8 @@ class Base():
 		# save the config or not.If default do not save it
 		self.bSave = True
 		self.XmlDic = {}
+		self.pwd = None
+
 	def _set_configDic(self, configDic):
 		self.configDic = configDic
 	

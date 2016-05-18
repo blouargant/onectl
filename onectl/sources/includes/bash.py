@@ -79,3 +79,28 @@ def run_parallel(commands):
 		result["error"] = "Error: cannot run parallel SSH: %s" % str(sys.exc_info()[1])
 	
 	return result
+
+def background(command):
+	""" Send bash command in background"""
+	result = ""
+	errors = []
+	FNULL = open(os.devnull, 'w')
+	pipes = command.split(" | ")
+	procs = []
+	try:
+		args = split_args(pipes[0].strip())
+		procs.append(subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+		pipes.pop(0)
+		i = 0
+		for pipedCmd in pipes:
+			args = split_args(pipedCmd.strip())
+			procs.append(subprocess.Popen(args, stdin=procs[i].stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+			errors.append(procs[i].stderr.readline())
+			procs[i].stdout.close()
+			procs[i].stderr.close()
+			i = i+1
+	except:
+		errors.append(str(sys.exc_info()[1]))
+		return "\n".join(filter(None, errors))
+	
+	return "running in background"

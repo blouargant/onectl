@@ -256,23 +256,24 @@ class PluginControl(pluginClass.Base):
 			else:
 				bridge = args[len(args)-3]
 			result = []
+			mgnt_iface = 'mgnt-'+re.sub('ovsbr_', '', bridge)
 			
 			if self.PluginName == "access":
 				files = os.listdir("/etc/sysconfig/network-scripts/")
 				for file in files:
-					if "ifcfg-" in file and bridge+"_mgnt" not in file:
+					if "ifcfg-" in file and mgnt_iface not in file:
 						res, err = bash.run('grep ^OVS_BRIDGE /etc/sysconfig/network-scripts/'+file)
 						if res:
 							args = res.split("=")
 							if re.match('"*'+bridge+'"*', args[1].strip()):
 								iface = re.sub('ifcfg-', '', file)
-								if iface != bridge+"-mgnt" and iface not in result:
+								if iface != mgnt_iface and iface not in result:
 									result.append(iface)
 				result.sort()
 			
 			if self.PluginName == "ip":
-				if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+bridge+"-mgnt"):
-					tmp_lines = open('/etc/sysconfig/network-scripts/ifcfg-'+bridge+"-mgnt", 'r').readlines()
+				if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+mgnt_iface):
+					tmp_lines = open('/etc/sysconfig/network-scripts/ifcfg-'+mgnt_iface, 'r').readlines()
 					IP = ""
 					NETMASK = ""
 					for line in tmp_lines:
@@ -293,8 +294,8 @@ class PluginControl(pluginClass.Base):
 					result.append('none')
 			
 			if self.PluginName == "vlan":
-				if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+bridge+"-mgnt"):
-					tmp_lines = open('/etc/sysconfig/network-scripts/ifcfg-'+bridge+"-mgnt", 'r').readlines()
+				if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+mgnt_iface):
+					tmp_lines = open('/etc/sysconfig/network-scripts/ifcfg-'+mgnt_iface, 'r').readlines()
 					for line in tmp_lines:
 						if re.match('^OVS_OPTIONS *=', line):
 							infos = line.split('=')
@@ -345,6 +346,7 @@ class PluginControl(pluginClass.Base):
 				bridge = args[len(args)-2]
 			else:
 				bridge = args[len(args)-3]
+			mgnt_iface = 'mgnt-'+re.sub('ovsbr_', '', bridge)
 			if self.PluginName == "vlan" or self.PluginName == "ip":
 				IP = ""
 				NETMASK = ""
@@ -353,10 +355,10 @@ class PluginControl(pluginClass.Base):
 				if self.PluginName == "ip":
 					if data == "none":
 						if self.live_update:
-							bash.run('ifdown '+bridge+'-mgnt')
-						if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+bridge+"-mgnt"):
-							os.remove("/etc/sysconfig/network-scripts/ifcfg-"+bridge+"-mgnt")
-							self.output.debug("removed /etc/sysconfig/network-scripts/ifcfg-"+bridge+"-mgnt")
+							bash.run('ifdown '+mgnt_iface)
+						if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+mngt_iface):
+							os.remove("/etc/sysconfig/network-scripts/ifcfg-"+mgnt_iface)
+							self.output.debug("removed /etc/sysconfig/network-scripts/ifcfg-"+mgnt_iface)
 						self.executePluginLater("net.conf.bridges."+bridge+".mgnt.vlan", "set", 'none')
 						return 0
 					
@@ -382,9 +384,9 @@ class PluginControl(pluginClass.Base):
 				
 				self.output.debug("setting "+self.PluginName+" for "+bridge+" to "+data)
 				
-				if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+bridge+"-mgnt"):
+				if os.path.exists("/etc/sysconfig/network-scripts/ifcfg-"+mgnt_iface):
 					final_lines = []
-					tmp_lines = open('/etc/sysconfig/network-scripts/ifcfg-'+bridge+"-mgnt", 'r').readlines()
+					tmp_lines = open('/etc/sysconfig/network-scripts/ifcfg-'+mgnt_iface, 'r').readlines()
 					has_ip = False
 					has_netmask = False
 					has_opts = False
@@ -392,7 +394,7 @@ class PluginControl(pluginClass.Base):
 					has_bridge = False
 					for line in tmp_lines:
 						if re.match('^DEVICE *=', line):
-							line = 'DEVICE="'+bridge+'-mgnt"\n'
+							line = 'DEVICE="'+mgnt_iface+'"\n'
 						elif re.match('^ONBOOT *=', line):
 							line = 'ONBOOT=yes\n'
 						elif re.match('^OVS_BRIDGE *=', line):
@@ -456,7 +458,7 @@ class PluginControl(pluginClass.Base):
 						if not has_extra:
 							final_lines.append('OVS_EXTRA="set Interface $DEVICE external-ids:iface-id=$(hostname -s)-$DEVICE-vif"\n')
 						
-					open('/etc/sysconfig/network-scripts/ifcfg-'+bridge+'-mgnt', 'w').writelines(final_lines)
+					open('/etc/sysconfig/network-scripts/ifcfg-'+mgnt_iface, 'w').writelines(final_lines)
 					
 				elif self.PluginName == "vlan":
 					if data != "none":
@@ -467,7 +469,7 @@ class PluginControl(pluginClass.Base):
 						return 0
 				else:
 					lines = []
-					lines.append('DEVICE='+bridge+'-mgnt\n')
+					lines.append('DEVICE="'+mgnt_iface+'"\n')
 					lines.append('ONBOOT=yes\n')
 					if self.PluginName == "ip":
 						if data == "dhcp":
@@ -481,11 +483,11 @@ class PluginControl(pluginClass.Base):
 					lines.append('TYPE=OVSIntPort\n')
 					lines.append('OVS_BRIDGE='+bridge+'\n')
 					lines.append('HOTPLUG=no\n')
-					open('/etc/sysconfig/network-scripts/ifcfg-'+bridge+'-mgnt', 'w').writelines(lines)
+					open('/etc/sysconfig/network-scripts/ifcfg-'+mgnt_iface, 'w').writelines(lines)
 				
 				if self.live_update:
-					bash.run('ifdown '+bridge+'-mgnt')
-					bash.run('ifup '+bridge+'-mgnt')
+					bash.run('ifdown '+mgnt_iface)
+					bash.run('ifup '+mgnt_iface)
 			
 			elif self.PluginName == "access":
 				self.output.debug("setting "+self.PluginName+" for "+bridge+" to "+data)

@@ -104,7 +104,7 @@ class PluginControl(pluginClass.Base):
 					if not BR_MGNT or re.search('Error', BR_MGNT):
 						self.output.error('Please set OpenKVI access bridge first.')
 						return 1
-					MGNT = BR_MGNT+"-mgnt"
+					MGNT = re.sub('ovsbr_', 'mgnt-', BR_MGNT)
 					
 					if os.path.exists('/etc/openkvi/openkvi_nat'):
 						bash.run('sh /etc/openkvi/openkvi_nat stop')

@@ -49,7 +49,7 @@ class PluginControl(pluginClass.Base):
 		opt['help'] = 'Get active.'
 		dic.append(opt)
 		
-		### OPTION: browse
+		### OPTION: browse [all]
 		opt = {}
 		opt['name'] = '--browse'
 		opt['metavar'] = 'ETH'

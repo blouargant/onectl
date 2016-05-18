@@ -171,20 +171,26 @@ class PluginControl(pluginClass.Base):
 		You can also use this to alter input data in order to support multiple input format.
 		This function is automatically called, there is no need to call it within <set> function.
 		'''
-		res, err = bash.run('file '+data)
+		data_path = os.path.normpath(os.path.join(self.pwd, data))
+		
+		res, err = bash.run('file '+data_path)
 		if not res:
-			self.output.error(data+' not found')
+			self.output.error(data_path+' not found')
 			return None
 		
 		if ': directory' in res:
-			if not os.path.exists(data+'/ks_openkvi.cfg'):
-				self.output.error(data+' is not valid: OpenKVI Kickstart cannot be found.')
+			if not os.path.exists(data_path+'/ks_openkvi.cfg'):
+				self.output.error(data_path+' is not valid: OpenKVI Kickstart cannot be found.')
 				return None
 		elif "ISO 9660" not in res:
-			self.output.error(data+' is not a valid ISO file')
+			self.output.error(data_path+' is not a valid ISO file')
+			if res:
+				self.output.error(res)
+			if err:
+				self.output.error(err)
 			return None
 			
-		return data
+		return data_path
 	
 	
 	def get(self):
@@ -387,7 +393,7 @@ class PluginControl(pluginClass.Base):
 			if not MODE or MODE not in ['direct', 'nat']:
 				self.output.error('Please set OpenKVI access mode to either bridge or nat first.')
 				return 1
-			MGNT = BR_MGNT+"-mgnt"
+			MGNT = re.sub('ovsbr_', 'mgnt-', BR_MGNT)
 			
 			if MODE == 'nat':
 				# Create openkvi nat
@@ -417,22 +423,28 @@ class PluginControl(pluginClass.Base):
 			self.output.title('Proceeding with OpenKVI creation, this may take some time ...')
 			
 			if not re.search("/opt/virtualization/isos/openkvi-iso-build", data):
+				data_path = self.inputValidation(data)
+				if not data_path:
+					return 1
 				# mount ISO
-				res, err = bash.run('file '+data)
+				res, err = bash.run('file '+data_path)
 				bash.run('mkdir -p /tmp/kvm_cdrom')
 				bash.run('umount /tmp/kvm_cdrom')
 				
 				if ': directory' in res:
-					res, err = bash.run('mount --bind '+data+' /tmp/kvm_cdrom')
+					res, err = bash.run('mount --bind '+data_path+' /tmp/kvm_cdrom')
 					if err:
-						self.output.error('An error occured when binding '+data+' to /tmp/kvm_cdrom directory')
+						self.output.error('An error occured when binding '+data_path+' to /tmp/kvm_cdrom directory:')
+						self.output.error(err)
 						return 1
 				elif "ISO 9660" in res:
-					res, err = bash.run('mount -o loop '+data+' /tmp/kvm_cdrom')
+					res, err = bash.run('mount -o loop,ro '+data_path+' /tmp/kvm_cdrom')
 					if err:
-						self.output.error('An error occured when mounting '+data+' to /tmp/kvm_cdrom directory')
+						self.output.error('An error occured when mounting '+data_path+' to /tmp/kvm_cdrom directory:')
+						self.output.error(err)
 						return 1
-				self.output.info(data+' mounted.')
+				
+				self.output.info(data_path+' mounted.')
 				bash.run('rm -rf /opt/virtualization/isos/openkvi-iso-build')
 				self.output.info('Copying Install Disc content ...')
 				shutil.copytree('/tmp/kvm_cdrom','/opt/virtualization/isos/openkvi-iso-build',symlinks=True)
@@ -449,7 +461,7 @@ class PluginControl(pluginClass.Base):
 				shutil.copy2('/usr/local/firstboot/system.startup.kvm_openkvi','/usr/local/firstboot/system.startup')
 			else:
 				os.remove('/usr/local/firstboot/system.startup')
-				shutil.copy2('/usr/local/comverse/firstboot/system.startup.kvm_openkvi','/usr/local/comverse/firstboot/system.startup')
+				shutil.copy2('/usr/local/firstboot/system.startup.kvm_openkvi','/usr/local/firstboot/system.startup')
 			bash.run('mkdir -p /opt/virtualization/vmdisks/')
 			bash.run('rm -f /opt/virtualization/vmdisks/OpenKVI-01.img')
 			bash.run('qemu-img create -f qcow2 -o preallocation=metadata /opt/virtualization/vmdisks/OpenKVI-01.img 10G')
@@ -519,7 +531,7 @@ class PluginControl(pluginClass.Base):
 			if os.path.exists('/usr/local/firstboot/openkvi.xml'):
 				xml_lines = open('/usr/local/firstboot/openkvi.xml', 'r').readlines()
 			else:
-				xml_lines = open('/usr/local/comverse/firstboot/openkvi.xml', 'r').readlines()
+				xml_lines = open('/usr/local/firstboot/openkvi.xml', 'r').readlines()
 			final_xml = []
 			for line in xml_lines:
 				line = line.replace('##OPENKVI##', 'OpenKVI')
@@ -544,13 +556,38 @@ class PluginControl(pluginClass.Base):
 			else:
 				TYPE = "qemu"
 			
+			self.output.info('Creating VM: check libvirtd status')
 			res, err = bash.run('virsh list')
-			bootCDMode = False
 			if err:
-				# We are in bootCD Install:
-				bootCDMode = True
+				self.output.error(err)
+				time.sleep(30)
+				self.output.info('Creating VM: check libvirtd status again')
+				res, err = bash.run('virsh list')
+				if err:
+					self.output.error(err)
+					return err
 				
+			if MODE == "nat":
+				lines = open("/etc/rc.d/rc.local", "r").readlines()
+				to_add = True
+				for line in lines:
+					if re.search('^sh /etc/openkvi/openkvi_nat', line):
+						to_add = False
+				if to_add:
+					lines.append('# OpenKVI Nating :\n')
+					lines.append('sh /etc/openkvi/openkvi_nat restart\n')
+				open("/etc/rc.d/rc.local", "w").writelines(lines)
+				
+				hosts_file = open("/etc/hosts", "r").readlines()
+				etchosts = []
+				for line in hosts_file:
+					if not re.search(' OpenKVI openkvi', line):
+						etchosts.append(line)
+				etchosts.append("192.168.122.2    OpenKVI openkvi\n")
+				open("/etc/hosts", "w").writelines(etchosts)
 			
+			
+			# Start installation	
 			create_openkvi = []
 			create_openkvi.append('#/bin/sh\n')
 			create_openkvi.append('DOMAINTYPE='+TYPE+'\n')
@@ -585,78 +622,60 @@ class PluginControl(pluginClass.Base):
 			create_openkvi.append('echo "Proceding with OpenKVI installation ..."\n')
 			create_openkvi.append('virsh start OpenKVI\n')
 			create_openkvi.append('echo "Started OpenKVI Virtual Machine"\n')
-			create_openkvi.append('sh /etc/comverse/openkvi_nat stop\n')
+			create_openkvi.append('sh /etc/openkvi/openkvi_nat stop\n')
 			create_openkvi.append('sleep 60\n')
-			create_openkvi.append('sh /etc/comverse/openkvi_nat start\n')
-			#if bootCDMode:
-			if bootCDMode or data == "/opt/virtualization/isos/openkvi-iso-build":
-				create_openkvi.append('echo "-> You can follow OpenKVI installation with a vnc client at $IP:0" > /etc/issue \n')
-				create_openkvi.append('TEST=""\n')
-				create_openkvi.append('while [ -z $TEST ]; do\n')
-				create_openkvi.append('    sleep 10\n')
-				create_openkvi.append('    wget 192.168.122.2:8080 2>/tmp/test; rm -f index.html\n')
-				create_openkvi.append('    TEST=$(cat /tmp/test | grep "index.html" | grep "saved")\n')
-				create_openkvi.append('done\n')
-				create_openkvi.append('echo "OpenKVI installation completed." >> /etc/issue \n')
-				create_openkvi.append('sleep 60\n')
-				create_openkvi.append('sh /usr/local/firstboot/system.startup \n')
-				create_openkvi.append('sh /etc/comverse/openkvi_nat restart\n')
+			create_openkvi.append('sh /etc/openkvi/openkvi_nat start\n')
+			create_openkvi.append('echo "-> You can follow OpenKVI installation with a vnc client at $IP:0" > /etc/issue \n')
+			create_openkvi.append('TEST=""\n')
+			create_openkvi.append('COUNT=0\n')
+			create_openkvi.append('while [ -z $TEST ]; do\n')
+			create_openkvi.append('    sleep 30\n')
+			create_openkvi.append('    wget 192.168.122.2:8080 2>/tmp/test; rm -f index.html\n')
+			create_openkvi.append('    TEST=$(cat /tmp/test | grep "index.html" | grep "saved")\n')
+			create_openkvi.append('    COUNT=$((COUNT+1))\n')
+			create_openkvi.append('    if [ $COUNT == 60 ]; then\n')
+			create_openkvi.append('        TEST="EXIT"\n')
+			create_openkvi.append('    fi\n')		
+			create_openkvi.append('done\n')
+			create_openkvi.append('echo "OpenKVI installation completed." >> /etc/issue \n')
+			create_openkvi.append('sleep 60\n')
+			create_openkvi.append('sh /usr/local/firstboot/system.startup \n')
+			create_openkvi.append('sh /etc/comverse/openkvi_nat restart\n')
 			
 			open('/root/create_openkvi.sh', 'w').writelines(create_openkvi)
-			if MODE == "nat":
-				lines = open("/etc/rc.d/rc.local", "r").readlines()
-				to_add = True
-				for line in lines:
-					if re.search('^sh /etc/comverse/openkvi_nat', line):
-						to_add = False
-				if to_add:
-					lines.append('# OpenKVI Nating :\n')
-					lines.append('sh /etc/comverse/openkvi_nat restart\n')
-				open("/etc/rc.d/rc.local", "w").writelines(lines)
-				
-				hosts_file = open("/etc/hosts", "r").readlines()
-				etchosts = []
-				for line in hosts_file:
-					if not re.search(' OpenKVI openkvi', line):
-						etchosts.append(line)
-				etchosts.append("192.168.122.2    OpenKVI openkvi\n")
-				open("/etc/hosts", "w").writelines(etchosts)
 			
-			if bootCDMode:
-				with open("/etc/rc.d/rc.local", "a") as rclocal:
-					rclocal.write('sh /root/create_openkvi.sh\n')
-					rclocal.write('perl -p -i -e "s/.*create_openkvi.sh\\n//" /etc/rc.d/rc.local\n')
-					rclocal.write('perl -p -i -e "s/^perl -p -i -e .*\\n//" /etc/rc.d/rc.local\n')
-				
-			else:
-				#cmd = 'ifconfig | grep -A1 "^'+MGNT+' " | grep inet | sed "s/.*addr://" | sed "s/ .*//"'
-				cmd = 'ip addr show dev '+MGNT+' | grep "inet " | sed -e "s/.*inet //" | sed -e "s/\/.*//"'
+			#cmd = 'ifconfig | grep -A1 "^'+MGNT+' " | grep inet | sed "s/.*addr://" | sed "s/ .*//"'
+			cmd = 'ip addr show dev '+MGNT+' | grep "inet " | sed -e "s/.*inet //" | sed -e "s/\/.*//"'
+			res, err = bash.run(cmd)
+			IP = res.strip()
+			self.output.info('Creating OpenKVI Virtual Machine ...')
+			bash.run('rm -f /root/openkvi.log; touch /root/openkvi.log')
+			bash.run('rm -f /root/openkvi-error.log; touch /root/openkvi-error.log')
+			bash.background('sh /root/create_openkvi.sh 1>/root/openkvi.log 2>/root/openkvi-error.log')
+			time.sleep(10)
+			res, err = bash.run('virsh domdisplay OpenKVI')
+			screen = '0'
+			if res:
+				display = res.split(':')
+				screen = display[2].strip()
+			self.output.title('-> You can follow OpenKVI installation with a vnc client at '+IP+':'+screen)
+			time.sleep(20)
+			err = open('/root/openkvi-error.log').readlines()
+			if len(err) > 0:
+				self.output.error('Failed create OpenKVI VM: ')
+				self.output.error("\n".join(filter(None, errors)))
+				cmd = "ps fax | grep create_openkvi.sh | grep -v grep"
 				res, err = bash.run(cmd)
-				IP = res.strip()
-				self.output.info('Creating OpenKVI Virtual Machine ...')
-				res, err = bash.run('sh /root/create_openkvi.sh')
-				self.output.debug("res:"+res)
-				self.output.debug("err:"+err)
-				if err:
-					self.output.error('Failed create OpenKVI VM: '+err)
-					return 1
-				
-				res, err = bash.run('virsh domdisplay OpenKVI')
-				media = 'vnc'
-				screen = '0'
-				if res:
-					display = res.split(':')
-					media = display[0].strip()
-					screen = display[2].strip()
-					
-				self.output.title('-> You can follow OpenKVI installation with a '+media+' client at '+IP+':'+screen)
-				time.sleep(10)
-				bash.run('sh /etc/comverse/openkvi_nat restart')
+				PID = res.split(' ')[0]
+				bash.run('kill -9 '+PID)
+				return 1
+			
+			bash.run('sh /etc/comverse/openkvi_nat restart')
 			
 			
 		except:
 			err = str(sys.exc_info()[1])
-			self.output.error(err)
+			self.output.error("Cannot create OpenKVI: "+err)
 		return res
 	
 	def _check(self, *args, **kwargs):

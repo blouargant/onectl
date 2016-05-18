@@ -546,7 +546,7 @@ class Controler:
 			return 1
 		return 0
 		
-	def execute_action(self, plugin, action, data = None, debug = False, nolive = None):
+	def execute_action(self, plugin, action, data=None, debug=False, nolive=None, pwd=None):
 		''' if data is several parameters use a list '''
 		actionDic = {}
 		
@@ -582,6 +582,7 @@ class Controler:
 				PluginModule = self.load_plugin(plugin)
 				if not PluginModule:
 					raise ValueError("Plugin %s can not be loaded" %plugin)
+				PluginModule.pwd = pwd
 				self.PluginName = plugin
 				self.PluginModule = PluginModule
 					
